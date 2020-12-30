@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PSF_Sensor_Tool01", "PSF_Sensor_Tool01.csproj", "{52D1F19E-8EC4-463C-B298-57F3681CDBEE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{52D1F19E-8EC4-463C-B298-57F3681CDBEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52D1F19E-8EC4-463C-B298-57F3681CDBEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52D1F19E-8EC4-463C-B298-57F3681CDBEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52D1F19E-8EC4-463C-B298-57F3681CDBEE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F6814DA-8584-42C3-881C-C01FF7556107}
+	EndGlobalSection
+EndGlobal
