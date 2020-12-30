@@ -8,8 +8,10 @@ using LibUsbDotNet;
 using LibUsbDotNet.LibUsb;
 using LibUsbDotNet.Main;
 using LibUsbDotNet.LudnMonoLibUsb;
-using EC = LibUsbDotNet.Main.ErrorCode;
+// using LibUsbDotNet.Main.ErrorCode;
 
+
+using System.Threading;
 
 namespace PSF_STM32_Comm
 {
@@ -148,7 +150,7 @@ namespace PSF_STM32_Comm
             {
                 eReturn = MyUsbEpReader.Read(readBuffer, 1000, out uiTransmitted);
             }
-            if (eReturn != EC.None)
+            if (eReturn != ErrorCode.None)
             {
                 if(ErrorCount++ > 200)
                 {
@@ -163,6 +165,135 @@ namespace PSF_STM32_Comm
             return i2cData;
         }
 
+        public byte[] i2c_Read(ushort i2c_no,byte address,byte cmd,byte cmd_len,int numBytes)
+        {
+            byte[] writeBuffer = new byte[64];
+            byte[] readBuffer = new byte[64];
+            byte[] i2cData = new byte[64];
+
+            int uiTransmitted;
+            ErrorCode eReturn = ErrorCode.None;
+
+            writeBuffer[0] = 0; // type: i2c=0;uart=1;
+            writeBuffer[1] = 1; // isRead; read=1;write=0;
+            writeBuffer[2] = (byte)i2c_no;
+            writeBuffer[3] = address;
+            writeBuffer[4] = cmd;
+            writeBuffer[5] = cmd_len;
+            writeBuffer[6] = (byte)numBytes;
+            if(MyUsbEpWriter != null)
+            {
+                eReturn = MyUsbEpWriter.Write(writeBuffer, 0, 7, 1000, out uiTransmitted);
+
+            }
+            Thread.Sleep(1);
+            if(MyUsbEpReader != null)
+            {
+                eReturn = MyUsbEpReader.Read(readBuffer, 1000, out uiTransmitted);
+            }
+            for (int i = 0;i < readBuffer.Length;i++)
+            {
+                Console.WriteLine("MyUsbEpReader.Read()" + readBuffer[i]);
+            }
+            if(eReturn != ErrorCode.None)
+            {
+                Console.WriteLine("eReturn != ErrorCode.None");
+                if(ErrorCount++>200)
+                {
+                    // i2cError();
+                }
+            }
+
+            if(readBuffer[0] == 0)
+            {
+                Buffer.BlockCopy(readBuffer, 1, i2cData, 0, numBytes);
+            }
+            return i2cData;
+        }
+
+        public bool i2c_Write(ushort i2c_no,byte address,byte cmd, byte[] buffer,int numBytes)
+        {
+            int uiTransmitted;
+            ErrorCode eReturn = ErrorCode.None;
+            byte[] writeBuffer = new byte[64];
+            byte[] readBuffer = new byte[64];
+
+            writeBuffer[0] = 0; // type: i2c=0; uart=1;
+            writeBuffer[1] = 0; // isRead: read=1; write=0;
+            writeBuffer[2] = (byte)i2c_no;
+            writeBuffer[3] = address;
+            writeBuffer[4] = cmd;
+            writeBuffer[5] = 1;
+            writeBuffer[6] = (byte)numBytes;
+            if(numBytes > 0)
+            {
+                Buffer.BlockCopy(buffer, 0, writeBuffer, 7, numBytes);
+
+            }
+            if(MyUsbEpWriter != null)
+            {
+                eReturn = MyUsbEpWriter.Write(writeBuffer, 0, 7 + numBytes, 1000, out uiTransmitted);
+            }
+            if(eReturn != ErrorCode.None)
+            {
+                return false;
+            }
+            if(MyUsbEpReader != null)
+            {
+                eReturn = MyUsbEpReader.Read(readBuffer, 1000, out uiTransmitted);
+            }
+            if(eReturn != ErrorCode.None)
+            {
+                return false;
+            }
+            if(readBuffer[0] != 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool i2c_Write(ushort i2c_no,byte address,byte cmd,byte cmd_len,byte[] buffer,int numBytes)
+        {
+            int uiTransmitted;
+            ErrorCode eReturn = ErrorCode.None;
+            byte[] writeBuffer = new byte[64];
+            byte[] readBuffer = new byte[64];
+
+            writeBuffer[0] = 0; // type:i2c=0;uart=1;
+            writeBuffer[1] = 0; // is Read: read=1;write=0;
+            writeBuffer[2] = (byte)i2c_no;
+            writeBuffer[3] = address;
+            writeBuffer[4] = cmd;
+            writeBuffer[5] = cmd_len;
+            writeBuffer[6] = (byte)numBytes;
+            Buffer.BlockCopy(buffer, 0, writeBuffer, 7, numBytes);
+
+            if(MyUsbEpWriter != null)
+            {
+                eReturn = MyUsbEpWriter.Write(writeBuffer, 0, 7 + numBytes, 1000, out uiTransmitted); 
+            }
+            if(eReturn != ErrorCode.None)
+            {
+                return false;
+            }
+            if(MyUsbEpReader != null)
+            {
+                eReturn = MyUsbEpReader.Read(readBuffer, 1000, out uiTransmitted);
+            }
+            if(eReturn != ErrorCode.None)
+            {
+                return false;
+            }
+            if(readBuffer[0] != 0)
+            {
+                return false;
+            }
+
+            return true;
+
+        }
         static void Main(string[] args)
         {
             Console.WriteLine("\r\nPSF_STM32_Comm; Main()");
