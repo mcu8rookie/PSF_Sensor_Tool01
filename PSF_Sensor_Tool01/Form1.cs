@@ -7,6 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+using System.IO;
+
+using PSF_STM32_Comm;
+
 namespace PSF_Sensor_Tool01
 {
 
@@ -93,10 +97,15 @@ namespace PSF_Sensor_Tool01
 
         
 
-        //public int Comm_Board_Type = 0;
-        //public int Comm_BaudRate_Type = 0;
-        //public int 
+        // 
+        public int Comm_Board_Type = 0;
+        public int Comm_ComnNbr = 0;
+        public int Comm_BaudRate_Type = 0;
+        public int Comm_BaudRate_Nbr = 0;
+        public int Comm_CommSwitch = 0;
 
+
+        Comm_Stm32 Comm = new Comm_Stm32();
 
         public Form1()
         {
@@ -112,11 +121,14 @@ namespace PSF_Sensor_Tool01
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            
-
             UI_Init();
 
-        }
+            Comm_Board_Type = 0;
+            Comm_ComnNbr = 0;
+            Comm_BaudRate_Type = 0;
+            Comm_CommSwitch = 0;
+
+    }
 
         private void UI_Init()
         {
@@ -178,15 +190,19 @@ namespace PSF_Sensor_Tool01
                     label_CommBoardSelect.Location = new Point(50, 50);
                     panel_CommSet.Controls.Add(label_CommBoardSelect);
 
+                    comboBox_CommBoardSelect.Text = "请选择通信板";
                     comboBox_CommBoardSelect.Items.Add("PSF_STM32 Board");
                     comboBox_CommBoardSelect.Items.Add("Dialan Board");
                     comboBox_CommBoardSelect.Items.Add("UART Board");
+                    comboBox_CommBoardSelect.Items.Add("非指定的串口板");
+                    comboBox_CommBoardSelect.Items.Add("非指定的USB板");
+
                     comboBox_CommBoardSelect.Width = combobox_width;
                     comboBox_CommBoardSelect.Height = combobox_height;
                     comboBox_CommBoardSelect.Location = new Point(150, 50);
                     panel_CommSet.Controls.Add(comboBox_CommBoardSelect);
 
-                    label_UartSelect.Text = "串口号选择:";
+                    label_UartSelect.Text = "通信口选择:";
                     label_UartSelect.Width = label_width;
                     label_UartSelect.Height = label_height;
                     label_UartSelect.Location = new Point(50, 100);
@@ -256,10 +272,12 @@ namespace PSF_Sensor_Tool01
                     label_Firmware.Location = new Point(50,50);
                     panel_SensorSet.Controls.Add(label_Firmware);
 
+                    button_ReadFirmware.Name = "button_ReadFirmware";
                     button_ReadFirmware.Text = "读取版本号";
                     button_ReadFirmware.Width = label_width;
                     button_ReadFirmware.Height = label_height;
                     button_ReadFirmware.Location = new Point(50, 80);
+                    button_ReadFirmware.Click += new System.EventHandler(this.button_ReadFirmware_Click);
                     panel_SensorSet.Controls.Add(button_ReadFirmware);
 
                     textBox_Offset.Text = "";
@@ -268,16 +286,20 @@ namespace PSF_Sensor_Tool01
                     textBox_Offset.Location = new Point(50, 150);
                     panel_SensorSet.Controls.Add(textBox_Offset);
 
+                    button_ReadOffset.Name = "button_ReadOffset";
                     button_ReadOffset.Text = "读取Offset";
                     button_ReadOffset.Width = label_width;
                     button_ReadOffset.Height = label_height;
                     button_ReadOffset.Location = new Point(50, 180);
+                    button_ReadOffset.Click += new System.EventHandler(button_ReadOffset_Click);
                     panel_SensorSet.Controls.Add(button_ReadOffset);
 
+                    button_WriteOffset.Name = "button_WriteOffset";
                     button_WriteOffset.Text = "写入Offset";
                     button_WriteOffset.Width = label_width;
                     button_WriteOffset.Height = label_height;
                     button_WriteOffset.Location = new Point(50, 210);
+                    button_WriteOffset.Click += new System.EventHandler(button_WriteOffset_Click);
                     panel_SensorSet.Controls.Add(button_WriteOffset);
 
                     textBox_Gain.Text = "";
@@ -286,52 +308,68 @@ namespace PSF_Sensor_Tool01
                     textBox_Gain.Location = new Point(50, 280);
                     panel_SensorSet.Controls.Add(textBox_Gain);
 
+                    button_ReadGain.Name = "button_ReadGain";
                     button_ReadGain.Text = "读取Gain";
                     button_ReadGain.Width = label_width;
                     button_ReadGain.Height = label_height;
                     button_ReadGain.Location = new Point(50, 310);
+                    button_ReadGain.Click += new System.EventHandler(button_ReadGain_Click);
                     panel_SensorSet.Controls.Add(button_ReadGain);
 
+                    button_WriteGain.Name = "button_WriteGain";
                     button_WriteGain.Text = "写入Gain";
                     button_WriteGain.Width = label_width;
                     button_WriteGain.Height = label_height;
                     button_WriteGain.Location = new Point(50, 340);
+                    button_WriteGain.Click += new System.EventHandler(button_WriteGain_Click);
                     panel_SensorSet.Controls.Add(button_WriteGain);
 
+                    button_ReadTableX.Name = "button_ReadTableX";
                     button_ReadTableX.Text = "读取Table X";
                     button_ReadTableX.Width = label_width;
                     button_ReadTableX.Height = label_height;
                     button_ReadTableX.Location = new Point(170,50);
+                    button_ReadTableX.Click += new System.EventHandler(button_ReadTableX_Click);
                     panel_SensorSet.Controls.Add(button_ReadTableX);
 
+                    button_ReadTableY.Name = "button_ReadTableY";
                     button_ReadTableY.Text = "读取Table Y";
                     button_ReadTableY.Width = label_width;
                     button_ReadTableY.Height = label_height;
                     button_ReadTableY.Location = new Point(170, 80);
+                    button_ReadTableY.Click += new System.EventHandler(button_ReadTableY_Click);
                     panel_SensorSet.Controls.Add(button_ReadTableY);
 
+                    button_WriteTableX.Name = "button_WriteTableX";
                     button_WriteTableX.Text = "写入Table X";
                     button_WriteTableX.Width = label_width;
                     button_WriteTableX.Height = label_height;
                     button_WriteTableX.Location = new Point(170, 180);
+                    button_WriteTableX.Click += new System.EventHandler(button_WriteTableX_Click);
                     panel_SensorSet.Controls.Add(button_WriteTableX);
 
+                    button_WriteTableY.Name = "button_WriteTableY";
                     button_WriteTableY.Text = "写入Table Y";
                     button_WriteTableY.Width = label_width;
                     button_WriteTableY.Height = label_height;
                     button_WriteTableY.Location = new Point(170, 210);
+                    button_WriteTableY.Click += new System.EventHandler(button_WriteTableY_Click);
                     panel_SensorSet.Controls.Add(button_WriteTableY);
 
+                    button_ReadTableXY.Name = "button_ReadTableXY";
                     button_ReadTableXY.Text = "读取Table XY";
                     button_ReadTableXY.Width = label_width;
                     button_ReadTableXY.Height = label_height;
                     button_ReadTableXY.Location = new Point(170, 310);
+                    button_ReadTableXY.Click += new System.EventHandler(button_ReadTableXY_Click);
                     panel_SensorSet.Controls.Add(button_ReadTableXY);
 
+                    button_WriteTableXY.Name = "button_WriteTableXY";
                     button_WriteTableXY.Text = "写入Table XY";
                     button_WriteTableXY.Width = label_width;
                     button_WriteTableXY.Height = label_height;
                     button_WriteTableXY.Location = new Point(170, 340);
+                    button_WriteTableXY.Click += new System.EventHandler(button_WriteTableXY_Click);
                     panel_SensorSet.Controls.Add(button_WriteTableXY);
 
                     dataGridView_C2R15.ColumnCount = 2;
@@ -354,14 +392,18 @@ namespace PSF_Sensor_Tool01
                     dataGridView_C2R15.Location = new Point(290,50);
                     panel_SensorSet.Controls.Add(dataGridView_C2R15);
 
+                    button_SaveParameter.Name = "button_SaveParameter"; 
                     button_SaveParameter.Text = "保存参数";
                     button_SaveParameter.Size = new Size(100,20);
                     button_SaveParameter.Location = new Point(50,420);
+                    button_SaveParameter.Click += new System.EventHandler(button_SaveParameter_Click);
                     panel_SensorSet.Controls.Add(button_SaveParameter);
 
+                    button_ImportParameter.Name = "button_ImportParameter";
                     button_ImportParameter.Text = "导入参数";
                     button_ImportParameter.Size = new Size(100, 20);
                     button_ImportParameter.Location = new Point(50, 450);
+                    button_ImportParameter.Click += new System.EventHandler(button_ImportParameter_Click);
                     panel_SensorSet.Controls.Add(button_ImportParameter);
 
 
@@ -375,36 +417,37 @@ namespace PSF_Sensor_Tool01
 
                     button_ReadCalidata.Name = "ReadCalidata";
                     button_ReadCalidata.Text = "读取Calidata";
-
                     button_ReadCalidata.Size = new System.Drawing.Size(90, 30);
                     button_ReadCalidata.Location = new Point(5, 5);
+                    button_ReadCalidata.Click += new System.EventHandler(button_ReadCalidata_Click);
                     panel_DataGather.Controls.Add(button_ReadCalidata);
 
                     button_ReadRawdata.Name = "button_ReadRawdata";
                     button_ReadRawdata.Text = "读取Rawdata";
-
                     button_ReadRawdata.Size = new System.Drawing.Size(90, 30);
                     button_ReadRawdata.Location = new Point(105, 5);
+                    button_ReadRawdata.Click += new System.EventHandler(button_ReadRawdata_Click);
                     panel_DataGather.Controls.Add(button_ReadRawdata);
 
                     button_ReadAlldata.Name = "button_ReadAlldata";
                     button_ReadAlldata.Text = "读取Alldata";
-
                     button_ReadAlldata.Size = new System.Drawing.Size(90, 30);
                     button_ReadAlldata.Location = new Point(205, 5);
+                    button_ReadAlldata.Click += new System.EventHandler(button_ReadAlldata_Click);
                     panel_DataGather.Controls.Add(button_ReadAlldata);
 
                     button_ClearData.Name = "ClearData";
                     button_ClearData.Text = "ClearData";
                     button_ClearData.Size = new System.Drawing.Size(90, 30);
                     button_ClearData.Location = new Point(305, 5);
+                    button_ClearData.Click += new System.EventHandler(button_ClearData_Click);
                     panel_DataGather.Controls.Add(button_ClearData);
 
                     button_SaveData.Name = "button_SaveData";
                     button_SaveData.Text = "SaveData";
-
                     button_SaveData.Size = new System.Drawing.Size(90, 30);
                     button_SaveData.Location = new Point(405, 5);
+                    button_SaveData.Click += new System.EventHandler(button_SaveData_Click);
                     panel_DataGather.Controls.Add(button_SaveData);
 
                     // comboBox_WhetherAutoSave.Text = "自动保存吗？";
@@ -450,6 +493,141 @@ namespace PSF_Sensor_Tool01
            
         }
 
+        private bool Check_Argument(int nbr)
+        {
+            bool ReturnCode = true;
+
+            switch(nbr)
+            {
+                case 1:
+
+                    break;
+                case 2:
+                    try
+                    {
+                        Comm_Board_Type = comboBox_CommBoardSelect.SelectedIndex;
+
+                        Console.WriteLine("comboBox_CommBoardSelect.SelectedIndex = " + comboBox_CommBoardSelect.SelectedIndex.ToString()) ;
+                        Console.WriteLine("Comm_Board_Type = "+ Comm_Board_Type.ToString());
+
+                    }
+                    catch
+                    {
+                        Comm_Board_Type = -1;
+                        MessageBox.Show("选择通信板型号错误","Exception Report:");
+                        ReturnCode = false;
+                    }
+                    finally
+                    {
+                        if(Comm_Board_Type == -1)
+                        {
+                            MessageBox.Show("请正确选择通信板型号，\r\n如果不是指定的通信板型号，请选择非指定的特定通信方式的板型。\r\n","Exception Report:");
+                            ReturnCode = false;
+                        }
+                        else
+                        {
+                            ReturnCode = true;
+                        }
+                    }
+
+                    if (ReturnCode == false)
+                    {
+                        return false;
+                    }
+
+                    if(Comm_Board_Type == 2 || Comm_Board_Type == 3)
+                    {
+                        try
+                        {
+                            Comm_ComnNbr = comboBox_UartSelect.SelectedIndex;
+                            Console.WriteLine("comboBox_UartSelect.SelectedIndex = " + comboBox_UartSelect.SelectedIndex.ToString());
+                            Console.WriteLine("Comm_ComnNbr = " + Comm_ComnNbr.ToString());
+                        }
+                        catch
+                        {
+                            Comm_ComnNbr = -1;
+                            MessageBox.Show("选择通信口错误", "Exception Report:");
+                            ReturnCode = false;
+                        }
+                        finally
+                        {
+                            if (Comm_ComnNbr == -1)
+                            {
+                                MessageBox.Show("请正确选择通信口，\r\n", "Exception Report:");
+                                ReturnCode = false;
+                            }
+                            else
+                            {
+                                ReturnCode = true;
+                            }
+                        }
+
+                        if(ReturnCode == false)
+                        {
+                            return false;
+                        }
+
+                        if(Comm_Board_Type == 2 || Comm_Board_Type == 3)
+                        {
+                            try
+                            {
+                                // Comm_BaudRate_Type = comboBox_BaudRateSelect.SelectedIndex;
+                                Comm_BaudRate_Nbr = Convert.ToInt32(comboBox_BaudRateSelect.Text);
+                                //Console.WriteLine("comboBox_BaudRateSelect.SelectedIndex = "+ comboBox_BaudRateSelect.SelectedIndex.ToString());
+                                //Console.WriteLine("Comm_BaudRate_Type = "+Comm_BaudRate_Type.ToString());
+                                Console.WriteLine("Convert.ToInt32(comboBox_BaudRateSelect.Text) = " + Convert.ToInt32(comboBox_BaudRateSelect.Text));
+                                Console.WriteLine("Comm_BaudRate_Nbr = " + Comm_BaudRate_Nbr);
+                            }
+                            catch
+                            {
+                                Comm_BaudRate_Type = -1;
+                                
+                                MessageBox.Show("请选择正确的波特率","Exception Report:") ;
+                                ReturnCode = false;
+                            }
+                            finally
+                            {
+                                if(Comm_BaudRate_Type == -1)
+                                {
+                                    MessageBox.Show("请正确选择波特率，\r\n", "Exception Report:");
+                                    ReturnCode = false;
+                                }
+                                else
+                                {
+                                    ReturnCode = true;
+                                }
+                            }
+                        }
+                        if(ReturnCode == false)
+                        {
+                            return false;
+                        }
+
+                        return true;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+
+                    break;
+                case 3:
+
+                    break;
+                case 4:
+
+                    break;
+                case 5:
+
+                    break;
+                default:
+
+                    break;
+
+            }
+
+            return true;
+        }
 
         private void button_SoftNote_Click(object sender, EventArgs e)
         {
@@ -507,22 +685,149 @@ namespace PSF_Sensor_Tool01
             panel_SaveAllData.Visible = true;
         }
 
-        private bool Flag_CommSwitch = false;
+        // button click function at panel 2
+        // private bool Flag_CommSwitch = false;
         private void button_CommSwitch_Click(object sender,EventArgs e)
         {
-            if(Flag_CommSwitch)
+            // Check Config Parameter;
+
+
+            if(Comm_CommSwitch == 1)
             {
-                Flag_CommSwitch = false;
-                button_CommSwitch.Text = "开/关  (当前：关)";
-                button_CommSwitch.BackColor = Color.Pink;
+                if (Comm.Close() == true)
+                {
+                    Comm_CommSwitch = 0;
+                    button_CommSwitch.Text = "开/关  (当前：关)";
+                    button_CommSwitch.BackColor = Color.Pink;
+                }
+                else
+                {
+                    MessageBox.Show("关闭通信口异常；", "Exception Report: Comm.Close();");
+                }
             }
             else
             {
-                Flag_CommSwitch = true;
-                button_CommSwitch.Text = "开/关  (当前：开)";
-                button_CommSwitch.BackColor = Color.LightGreen;
+                if(Comm.Open() == true)
+                {
+                    Comm_CommSwitch = 1;
+                    button_CommSwitch.Text = "开/关  (当前：开)";
+                    button_CommSwitch.BackColor = Color.LightGreen;
+                }
+                else
+                {
+                    MessageBox.Show("打开通信口异常；", "Exception Report: Comm.Open();");
+                }
+
+                Check_Argument(2);
             }
-            
         }
+
+        // button click function which at panel 3
+        private void button_ReadFirmware_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button_ReadOffset_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button_WriteOffset_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void button_ReadGain_Click(object sender,EventArgs e)
+        {
+
+        }
+
+        private void button_WriteGain_Click(object sender,EventArgs e)
+        {
+
+        }
+        private void button_ReadTableX_Click(object sender,EventArgs e)
+        {
+
+        }
+        private void button_ReadTableY_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void button_WriteTableX_Click(object sender,EventArgs e)
+        {
+
+        }
+        private void button_WriteTableY_Click(object sender,EventArgs e)
+        {
+
+        }
+        private void button_ReadTableXY_Click(object sender,EventArgs e)
+        {
+
+        }
+        private void button_WriteTableXY_Click(object sender,EventArgs e)
+        {
+
+        }
+        private void button_SaveParameter_Click(object sender,EventArgs e)
+        {
+            SaveFileDialog savefiledialog = new SaveFileDialog();
+            savefiledialog.Filter = "所有文件(*.*)|*.*|Json文件(*.json)|*.json|文本文件(*.txt)|*.txt|log文件(*.log)|*.log";
+            savefiledialog.FileName = "SaveFileName";
+            savefiledialog.AddExtension = true;
+            if(savefiledialog.ShowDialog() == DialogResult.OK)
+            {
+                MessageBox.Show(savefiledialog.FileName);
+                using (StreamWriter smWriter = new StreamWriter(savefiledialog.FileName))
+                {
+                    smWriter.Write(";asdjf;askjf;askjdf;");
+                }
+            
+            }
+        }
+        private void button_ImportParameter_Click(object sender,EventArgs e)
+        {
+            OpenFileDialog openfiledialog = new OpenFileDialog();
+            // openfiledialog.InitialDirectory = @"D:\";
+            openfiledialog.InitialDirectory = System.Windows.Forms.Application.StartupPath;
+            openfiledialog.Title = "Exercise OpenFileDialog function.";
+            openfiledialog.Filter = "All Files(*.*)|*.*|json Files(*.json)|(*.json)|txt Files(*.txt)|*.txt|log Files(*.log)|*.log";
+            openfiledialog.FilterIndex = 2;
+            openfiledialog.RestoreDirectory = true;
+            if(openfiledialog.ShowDialog() == DialogResult.OK)
+            {
+                MessageBox.Show(openfiledialog.FileName + "\r\n" );
+            }
+        }
+
+        // button click function which at panel 4
+        private void button_ReadCalidata_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void button_ReadRawdata_Click(object sender,EventArgs e)
+        {
+
+        }
+        private void button_ReadAlldata_Click(object sender,EventArgs e)
+        {
+
+        }
+        private void button_ClearData_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void button_SaveData_Click(object sender,EventArgs e)
+        {
+
+        }
+
+        // button click function at panel 5
+        //private void button
+
     }
 }
+
+
+

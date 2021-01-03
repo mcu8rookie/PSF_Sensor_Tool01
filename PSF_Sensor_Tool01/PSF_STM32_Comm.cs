@@ -15,7 +15,7 @@ using System.Threading;
 
 namespace PSF_STM32_Comm
 {
-    class Comm
+    class Comm_Stm32
     {
         private bool rtn = false;
 
